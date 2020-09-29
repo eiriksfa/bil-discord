@@ -5,6 +5,7 @@ name: das-data-lake
 
 variables:
   python.version: '3.8'
+  docker.login: 'dockerhub'
   docker.registry: 'eiriksfa'
   docker.repository: 'bil-discord'
   project.name: 'bil-discord'
@@ -72,7 +73,7 @@ jobs:
         inputs:
           command: login
           containerRegistry: |
-            $(docker.registry)
+            $(docker.login)
       - task: PipAuthenticate@1
         displayName: Authenticating PIP
         inputs:
