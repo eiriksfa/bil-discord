@@ -53,7 +53,7 @@ jobs:
           poetry build
         displayName: Building python package
       - script: |
-          poetry config repositories.azure https://pkgs.dev.azure.com/eiriksfagerhaug/$(project.package)/_packaging/$(project.package)/pypi/simple/
+          poetry config repositories.azure https://pkgs.dev.azure.com/eiriksfagerhaug/$(project.package)/_packaging/$(project.package)/pypi/upload
           poetry config http-basic.azure $(artifact-key) $(artifact-key)
           poetry publish -r azure
           exit 0
