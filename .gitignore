@@ -1,0 +1,6 @@
+/.python-version
+/.coverage
+/.nox
+/.pytest_cache
+/bil_discord.egg-info/
+/src/bil_discord.egg-info/

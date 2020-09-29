@@ -1,19 +1,97 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - master
 
-pool:
-  vmImage: 'ubuntu-latest'
+name: das-data-lake
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+variables:
+  python.version: '3.8'
+  docker.registry: 'eiriksfa'
+  docker.repository: 'bil-discord'
+  project.name: 'bil-discord'
+  project.package: 'bil_discord'
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+
+jobs:
+  - job: Debug
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(python.version)'
+      displayName: 'Installing/Using Python version $(python.version)'
+    - script: |
+        python -m pip install -U pip
+        pip install poetry
+        pip install nox
+      displayName: Install dependencies
+    - script: |
+        nox
+      displayName: Running Nox Tests
+  - job: Build
+
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    dependsOn: Debug
+    condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
+    variables:
+      - group: python-build
+      - name: python-build
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '$(python.version)'
+        displayName: 'Installing/Using Python version $(python.version)'
+      - script: |
+          python -m pip install -U pip
+          pip install poetry
+        displayName: Install dependencies
+      - script: |
+          poetry build
+        displayName: Building python package
+      - script: |
+          poetry config repositories.azure https://pkgs.dev.azure.com/eiriksfagerhaug/$(project.package)/_packaging/$(project.package)/pypi/simple/
+          poetry config http-basic.azure $(artifact-key) $(artifact-key)
+          poetry publish -r azure
+          exit 0
+        displayName: Publishing python package
+
+  - job: Deploy
+
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
+
+    steps:
+      - task: Docker@2
+        displayName: Login to Docker-Hub
+        inputs:
+          command: login
+          containerRegistry: |
+            $(docker.registry)
+      - task: PipAuthenticate@1
+        displayName: Authenticating PIP
+        inputs:
+          artifactFeeds: $(project.package)/$(project.package)
+          onlyAddExtraIndex: True
+      - task: Docker@2
+        displayName: Build Dockerimage
+        inputs:
+          repository: $(docker.registry)/$(docker.repository)
+          command: build
+          Dockerfile: Dockerfile
+          arguments: --build-arg INDEX_URL=$(PIP_EXTRA_INDEX_URL)
+          tags: |
+            $(Build.BuildId)
+            latest
+      - task: Docker@2
+        displayName: Push Dockerimage
+        inputs:
+          repository: $(docker.registry)/$(docker.repository)
+          command: push
+          Dockerfile: Dockerfile
+          tags: latest
