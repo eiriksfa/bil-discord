@@ -1,8 +1,14 @@
-FROM python:3-slim-buster
+FROM python:3.8
 
-RUN apt-get update -y
-RUN apt-get upgrade -y
+RUN mkdir /app
 
-ARG INDEX_URL
+COPY /src /app
+COPY pyproject.toml /app
 
-RUN pip install bil-discord --index-url $INDEX_URL
+WORKDIR /app
+
+ENV PYTHONPATH=${PYTHONPATH}:${PWD}
+
+RUN pip3 install poetry
+RUN poetry config virtualenvs.create false
+RUN poetry install --no-dev
