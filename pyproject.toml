@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bil-discord"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
 authors = ["Eirik Fagerhaug <eirik.fagerhaug@evry.com>"]
 
@@ -39,9 +39,8 @@ source = ["bil_discord"]
 show_missing = true
 fail_under = 10
 
-[build-system]
+[tool.poetry.scripts]
+bil-discord = "bil_discord.cli:main"[build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
 
-[tool.poetry.scripts]
-bil-discord = "bil_discord.cli:main"
