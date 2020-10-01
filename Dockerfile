@@ -1,14 +1,12 @@
-FROM python:3.8
+FROM python:3.8-slim
 
-RUN mkdir /app
+RUN apt-get update -y
+RUN apt-get upgrade -y
 
-COPY /src /app
-COPY pyproject.toml /app
+ARG INDEX_URL
 
-WORKDIR /app
+# TODO: Install requirements from pypi, package from index-url
+RUN pip install discord
+RUN pip install click
+RUN pip install bil-discord --index-url $INDEX_URL
 
-ENV PYTHONPATH=${PYTHONPATH}:${PWD}
-
-RUN pip3 install poetry
-RUN poetry config virtualenvs.create false
-RUN poetry install --no-dev

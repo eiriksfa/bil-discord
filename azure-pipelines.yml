@@ -31,69 +31,69 @@ jobs:
         nox
       displayName: Running Nox Tests
 
-#  - job: Build
-#
-#    pool:
-#      vmImage: 'ubuntu-latest'
-#
-#    dependsOn: Debug
-#    condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
-#    variables:
-#      - group: python-build
-#      - name: python-build
-#    steps:
-#      - task: UsePythonVersion@0
-#        inputs:
-#          versionSpec: '$(python.version)'
-#        displayName: 'Installing/Using Python version $(python.version)'
-#      - script: |
-#          python -m pip install -U pip
-#          pip install poetry
-#        displayName: Install dependencies
-#      - script: |
-#          poetry build
-#        displayName: Building python package
-#      - script: |
-#          poetry config repositories.azure https://pkgs.dev.azure.com/eiriksfagerhaug/$(project.package)/_packaging/$(project.package)/pypi/upload
-#          poetry config http-basic.azure $(artifact-key) $(artifact-key)
-#          poetry publish -r azure
-#          exit 0
-#        displayName: Publishing python package
-#
-#  - job: Deploy
-#
-#    pool:
-#      vmImage: 'ubuntu-latest'
-#
-#    dependsOn: Build
-#    condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
-#
-#    steps:
-#      - task: Docker@2
-#        displayName: Login to Docker-Hub
-#        inputs:
-#          command: login
-#          containerRegistry: |
-#            $(docker.login)
-#      - task: PipAuthenticate@1
-#        displayName: Authenticating PIP
-#        inputs:
-#          artifactFeeds: $(project.package)/$(project.package)
-#          onlyAddExtraIndex: True
-#      - task: Docker@2
-#        displayName: Build Dockerimage
-#        inputs:
-#          repository: $(docker.registry)/$(docker.repository)
-#          command: build
-#          Dockerfile: Dockerfile
-#          arguments: --build-arg INDEX_URL=$(PIP_EXTRA_INDEX_URL)
-#          tags: |
-#            $(Build.BuildId)
-#            latest
-#      - task: Docker@2
-#        displayName: Push Dockerimage
-#        inputs:
-#          repository: $(docker.registry)/$(docker.repository)
-#          command: push
-#          Dockerfile: Dockerfile
-#          tags: latest
+  - job: Build
+
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    dependsOn: Debug
+    condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
+    variables:
+      - group: python-build
+      - name: python-build
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '$(python.version)'
+        displayName: 'Installing/Using Python version $(python.version)'
+      - script: |
+          python -m pip install -U pip
+          pip install poetry
+        displayName: Install dependencies
+      - script: |
+          poetry build
+        displayName: Building python package
+      - script: |
+          poetry config repositories.azure https://pkgs.dev.azure.com/eiriksfagerhaug/$(project.package)/_packaging/$(project.package)/pypi/upload
+          poetry config http-basic.azure $(artifact-key) $(artifact-key)
+          poetry publish -r azure
+          exit 0
+        displayName: Publishing python package
+
+  - job: Deploy
+
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
+
+    steps:
+      - task: Docker@2
+        displayName: Login to Docker-Hub
+        inputs:
+          command: login
+          containerRegistry: |
+            $(docker.login)
+      - task: PipAuthenticate@1
+        displayName: Authenticating PIP
+        inputs:
+          artifactFeeds: $(project.package)/$(project.package)
+          onlyAddExtraIndex: True
+      - task: Docker@2
+        displayName: Build Dockerimage
+        inputs:
+          repository: $(docker.registry)/$(docker.repository)
+          command: build
+          Dockerfile: Dockerfile
+          arguments: --build-arg INDEX_URL=$(PIP_EXTRA_INDEX_URL)
+          tags: |
+            $(Build.BuildId)
+            latest
+      - task: Docker@2
+        displayName: Push Dockerimage
+        inputs:
+          repository: $(docker.registry)/$(docker.repository)
+          command: push
+          Dockerfile: Dockerfile
+          tags: latest

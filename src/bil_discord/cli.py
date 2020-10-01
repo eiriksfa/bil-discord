@@ -1,4 +1,6 @@
 """Bot CLI module."""
+import os
+
 import click
 
 from bil_discord.bot import BilBot
@@ -14,11 +16,12 @@ class CLI:
         """Bot CLI entrypoint.
 
         Args:
-            key: discord bot key.
+            key: environment variable name for discord bot key.
 
         """
+        disc_key = os.getenv(key)
         bot = BilBot()
-        bot.run(key)
+        bot.run(disc_key)
 
     def run(self) -> None:
         """Run CLI Application."""
