@@ -20,6 +20,7 @@ class CLI:
 
         """
         disc_key = os.getenv(key)
+        print(disc_key)
         bot = BilBot()
         bot.run(disc_key)
 
