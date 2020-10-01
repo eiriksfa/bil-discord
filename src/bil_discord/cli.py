@@ -11,7 +11,7 @@ class CLI:
 
     @staticmethod
     @click.command("start")
-    @click.argument("key", type=str)
+    @click.option("--key", type=str, default="DISCORD_KEY")
     def cli(key: str) -> None:
         """Bot CLI entrypoint.
 
@@ -20,7 +20,10 @@ class CLI:
 
         """
         disc_key = os.getenv(key)
+        print(":::::::")
+        print(key)
         print(disc_key)
+        print(":::::::")
         bot = BilBot()
         bot.run(disc_key)
 
