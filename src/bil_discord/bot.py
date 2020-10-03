@@ -1,6 +1,6 @@
 """Bil-bot module."""
 import random
-from typing import List, Tuple
+from typing import List
 
 import discord
 
@@ -51,7 +51,7 @@ class BilBot(discord.Client):
     """Bil-Bot class."""
 
     @staticmethod
-    def get_nations(players: List[str], nations: List[str]) -> List[Tuple[str, str]]:
+    def get_nations(players: List[str], nations: List[str]) -> str:
         """Get nations bot command.
 
         Creates a list of randomized player-nation tuples based on a list of players
@@ -65,12 +65,12 @@ class BilBot(discord.Client):
             List of players with their assigned nation
 
         """
-        result = []
+        result = ""
         players = random.sample(players, len(players))
         for player in players:
             nation = random.choice(nations)
             nations.remove(nation)
-            result.append((player, nation))
+            result += f"{player}: {nation} \n"
         return result
 
     async def on_ready(self) -> None:
@@ -97,5 +97,5 @@ class BilBot(discord.Client):
 
         players = msg_split[2:]
         say = self.get_nations(players, a_nations)
-        for msg in say:
-            await message.channel.send(f"{msg[0]} - {msg[1]}")
+        say = "``` \n" + say + "```"
+        await message.channel.send(say)
